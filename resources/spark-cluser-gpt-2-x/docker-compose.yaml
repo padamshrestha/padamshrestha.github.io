@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  master:
+    image: spark:3.3.1
+    command: bin/spark-class org.apache.spark.deploy.master.Master -h master
+    ports:
+      - "8080:8080"
+    environment:
+      SPARK_CONF_DIR: /conf
+    volumes:
+      - ./conf:/conf
+  worker:
+    image: spark:3.3.1
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
+    environment:
+      SPARK_CONF_DIR: /conf
+    volumes:
+      - ./conf:/conf
+    depends_on:
+      - master
+  worker2:
+    image: spark:3.3.1
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
+    environment:
+      SPARK_CONF_DIR: /conf
+    volumes:
+      - ./conf:/conf
+    depends_on:
+      - master
+  driver:
+    image: spark:3.3.1
+    command: bin/spark-submit --master spark://master:7077 --deploy-mode client --conf spark.hadoop.fs.s3a.access.key=<access_key> --conf spark.hadoop.fs.s3a.secret.key=<secret_key> <path_to_your_code>
+    environment:
+      SPARK_CONF_DIR: /conf
+    volumes:
+      - ./conf:/conf
+    depends_on:
+      - master
+  postgres:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

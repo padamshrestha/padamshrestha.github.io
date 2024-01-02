@@ -1,0 +1,22 @@
+<configuration>
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://delta-lake-meta:9083</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:postgresql://delta-lake-meta:5432/delta</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.postgresql.Driver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>delta</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>delta</value>
+  </property>
+</configuration>

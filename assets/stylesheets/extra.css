@@ -1,0 +1,28 @@
+:root {
+    --md-default-bg-color--dark: #2b2e3b;
+    --md-default-bg-color--darker: #252732;
+    --md-default-bg-color--darkest: #1e2029;
+    --md-default-bg-color--ultra-dark: #111217;
+    --md-primary-fg-color: #ff6e42;
+    --md-primary-fg-color--light: #ff8a66;
+    --md-primary-fg-color--dark: #f4511f;
+    --md-primary-bg-color: #fff;
+    --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+    --md-progress: #546d78;
+    --md-progress-stripe: rgba(0, 0, 0, 0.2);
+
+    --md-mermaid-font-family: var(--md-text-font-family),sans-serif;
+    --md-mermaid-edge-color: #9397b2;
+    --md-mermaid-node-bg-color: #2f303e;
+    --md-mermaid-node-fg-color: #d5d7e2;
+    --md-mermaid-label-bg-color: #2f303e;
+    --md-mermaid-label-fg-color: #d5d7e2;
+}
+
+::marker {
+    color: var(--md-default-fg-color--lighter);
+}
+
+.md-header {
+    background-color: var(--md-default-bg-color--darker);
+}

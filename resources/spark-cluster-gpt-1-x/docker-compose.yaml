@@ -1,0 +1,67 @@
+version: '3'
+services:
+  master:
+    image: apache/spark:v3.3.1
+    hostname: spark-master
+    volumes:
+      - ./config:/usr/local/spark/conf/
+    environment:
+      - SPARK_MASTER=spark://master:7077
+      - SPARK_MODE=cluster
+      - SPARK_EXECUTOR_MEMORY=1g
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      - spark-net
+
+  worker1:
+    image: apache/spark:v3.3.1
+    hostname: spark-worker1
+    environment:
+      - SPARK_MASTER=spark://master:7077
+      - SPARK_WORKER_MEMORY=1g
+    depends_on:
+      - master
+    networks:
+      - spark-net
+
+  worker2:
+    image: apache/spark:v3.3.1
+    hostname: spark-worker2
+    environment:
+      - SPARK_MASTER=spark://master:7077
+      - SPARK_WORKER_MEMORY=1g
+    depends_on:
+      - master
+    networks:
+      - spark-net
+      
+  driver:
+    image: jupyter/pyspark-notebook:spark-3.3.1
+    hostname: spark-driver
+    environment:
+      - SPARK_MASTER=spark://master:7077
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+    ports:
+      - "8888:8888"
+    depends_on:
+      - master
+    networks:
+      - spark-net
+      
+  delta-lake-meta:
+    image: postgres:10
+    hostname: delta-lake-meta
+    environment:
+      - POSTGRES_DB=delta
+      - POSTGRES_USER=delta
+      - POSTGRES_PASSWORD=delta
+    ports:
+      - "5432:5432"
+    networks:
+      - spark-net
+
+networks:
+  spark-net:

@@ -1,0 +1,14 @@
+###
+POST https://192.168.1.1/cgi-bin/portal.cgi
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Encoding: gzip, deflate, br
+Cookie: sessionid=1276c61f74074895bbe81ae26d37956c
+Host: 192.168.1.1
+Origin: https://192.168.1.1
+Referer: https://192.168.1.1/config-wifi-wireless.html
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
+X-Requested-With: XMLHttpRequest
+Content-Type: application/json
+
+
+{"csrf_token_value":"U2FsdGVkX1+pKDaSyW6MkLa1wD3th8CagQzd7eX3eUSbNgo5yuXGy0TztZxfKanL/VwIypeyplL56aQosL6yzw==","toggle":"on","wl1_security_mode":"wpa2_personal","wl1_wpa_psk":"U2FsdGVkX18BXOr0ys7dCvpKgCS9bdO0OjJiEE/Hy9c=","wl1_radius_ipaddr":"0.0.0.0","wl1_radius_ipaddr_0":"0","wl1_radius_ipaddr_1":"0","wl1_radius_ipaddr_2":"0","wl1_radius_ipaddr_3":"0","wl1_radius_port":"1812","wl1_radius_key":"1234","wl0_security_mode":"wpa2_personal","wl0_wpa_psk":"U2FsdGVkX1+cznTW+X5h9N5MDt0slTdHUa4IUyRJH8M=","wl0_radius_ipaddr":"0.0.0.0","wl0_radius_ipaddr_0":"0","wl0_radius_ipaddr_1":"0","wl0_radius_ipaddr_2":"0","wl0_radius_ipaddr_3":"0","wl0_radius_port":"1812","wl0_radius_key":"1234","mesh_parent_status":"1","action":"set","page":"config_wifi_wireless"}

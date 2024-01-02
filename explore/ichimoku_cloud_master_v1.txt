@@ -1,0 +1,153 @@
+//@version=5
+indicator(title='Ichimoku Cloud Master', shorttitle='Ichimoku Master', overlay=true, timeframe="", timeframe_gaps=false)
+
+//----------[ Ichimoku Basic Script
+//inputs
+tenkanPeriods          = input.int(9,  minval=1, title='Tenkan-Sen Length',                               group='Ichimoku')
+kijunPeriods           = input.int(26, minval=1, title='Kijun-Sen Length',                                group='Ichimoku')
+laggingSpan2Periods    = input.int(52, minval=1, title='Senkou Span B Length',                            group='Ichimoku')
+displacement           = input.int(26, minval=1, title='Displacement',                                    group='Ichimoku')
+useBarColor            = input.bool(true,        title='Bar Colored by Chikou',                           group='Ichimoku')
+usekijunChikouColors   = input.bool(false,       title="Kijun Colored by Chikou",                         group='Ichimoku')
+useKumoMid             = input.bool(false,       title='Kumo Middle',                                     group='Ichimoku')
+useCloseInstead        = input.bool(false,       title='Use close Instead of Kijun for Chikou Crossover', group='Ichimoku')
+useChikouCross         = input.bool(true,        title='Chikou/Kijun Crossover',                          group='Conditions')
+useKumoTwist           = input.bool(true,        title='Kumo Twists',                                     group='Conditions')
+useKijunBounce         = input.bool(true,        title='Kijun Bounce',                                    group='Conditions')
+useTrendDetector       = input.bool(false,       title='Strong Trend',                                    group='Conditions')
+
+//Calculations
+donchian(len) =>
+    math.avg(ta.lowest(len), ta.highest(len))
+tenkanSen              = donchian(tenkanPeriods)
+kijunSen               = donchian(kijunPeriods)
+senkouSpanA            = math.avg(tenkanSen, kijunSen)
+senkouSpanB            = donchian(laggingSpan2Periods)
+isChikouAboveKijun     = useCloseInstead ? close>close[26] : close > kijunSen[26]
+chikouColor            = isChikouAboveKijun and close>open ? color.rgb(0,255,0) : isChikouAboveKijun and close<open ? color.rgb(0,100,0) : (not isChikouAboveKijun) and close<open ? color.rgb(238,130,238) : (not isChikouAboveKijun) and close>open ? color.rgb(75,0,130) : na
+chikouColor2           = isChikouAboveKijun ? color.rgb(0,0,255) : color.rgb(255,0,0)
+//Plotting
+plot(tenkanSen,        linewidth=1, color=color.rgb(104,136,247,0),                                                                                                                  title='Tenkan-Sen')
+plot(kijunSen,         linewidth=2, color=usekijunChikouColors ? chikouColor2 : color.rgb(188,62,66,0),                                                                              title='Kijun-Sen')
+plot(close,            linewidth=2, color=color.rgb(234,155,74,20), offset=-displacement + 1,                                                                                   title='Chikou Span')
+p1 = plot(senkouSpanA, linewidth=1, color=color.rgb(188,196,178),    offset=displacement - 1,                                                                                    title='Senkou Span A')
+p2 = plot(senkouSpanB, linewidth=1, color=color.rgb(230,94,89,0),        offset=displacement - 1,                                                                                    title='Senkou Span B')
+kumoCloudFillUpColor = input.color(color.rgb(230,241,231,70), title="Kumo Fill Up Color")
+kumoCloudFillDownColor = input.color(color.rgb(249,230,230,70), title="Kumo Fill Dowan Color")
+fill(p1, p2, color=senkouSpanA > senkouSpanB ? kumoCloudFillUpColor : kumoCloudFillDownColor)
+//----------] End of Ichimoku Basic Script
+
+
+//----------[ Start of Williams Fractals
+// Define "n" as the number of periods and keep a minimum value of 2 for error handling.
+n                  = input.int(defval=9, minval=2, title='Fractal Periods',       group='Williams Fractals')
+useFractals        = input.bool(true,              title="Fractals",              group='Williams Fractals')
+showFractalSupport = input(false,                  title='show Fractal Support?', group='Williams Fractals')
+// UpFractal
+bool upflagDownFrontier = true
+bool upflagUpFrontier0 = true
+bool upflagUpFrontier1 = true
+bool upflagUpFrontier2 = true
+bool upflagUpFrontier3 = true
+bool upflagUpFrontier4 = true
+
+for i = 1 to n by 1
+    upflagDownFrontier := upflagDownFrontier and high[n - i] < high[n]
+    upflagUpFrontier0 := upflagUpFrontier0 and high[n + i] < high[n]
+    upflagUpFrontier1 := upflagUpFrontier1 and high[n + 1] <= high[n] and high[n + i + 1] < high[n]
+    upflagUpFrontier2 := upflagUpFrontier2 and high[n + 1] <= high[n] and high[n + 2] <= high[n] and high[n + i + 2] < high[n]
+    upflagUpFrontier3 := upflagUpFrontier3 and high[n + 1] <= high[n] and high[n + 2] <= high[n] and high[n + 3] <= high[n] and high[n + i + 3] < high[n]
+    upflagUpFrontier4 := upflagUpFrontier4 and high[n + 1] <= high[n] and high[n + 2] <= high[n] and high[n + 3] <= high[n] and high[n + 4] <= high[n] and high[n + i + 4] < high[n]
+    upflagUpFrontier4
+flagUpFrontier = upflagUpFrontier0 or upflagUpFrontier1 or upflagUpFrontier2 or upflagUpFrontier3 or upflagUpFrontier4
+
+upFractal = upflagDownFrontier and flagUpFrontier
+
+// downFractal
+bool downflagDownFrontier = true
+bool downflagUpFrontier0 = true
+bool downflagUpFrontier1 = true
+bool downflagUpFrontier2 = true
+bool downflagUpFrontier3 = true
+bool downflagUpFrontier4 = true
+
+for i = 1 to n by 1
+    downflagDownFrontier := downflagDownFrontier and low[n - i] > low[n]
+    downflagUpFrontier0 := downflagUpFrontier0 and low[n + i] > low[n]
+    downflagUpFrontier1 := downflagUpFrontier1 and low[n + 1] >= low[n] and low[n + i + 1] > low[n]
+    downflagUpFrontier2 := downflagUpFrontier2 and low[n + 1] >= low[n] and low[n + 2] >= low[n] and low[n + i + 2] > low[n]
+    downflagUpFrontier3 := downflagUpFrontier3 and low[n + 1] >= low[n] and low[n + 2] >= low[n] and low[n + 3] >= low[n] and low[n + i + 3] > low[n]
+    downflagUpFrontier4 := downflagUpFrontier4 and low[n + 1] >= low[n] and low[n + 2] >= low[n] and low[n + 3] >= low[n] and low[n + 4] >= low[n] and low[n + i + 4] > low[n]
+    downflagUpFrontier4
+flagDownFrontier = downflagUpFrontier0 or downflagUpFrontier1 or downflagUpFrontier2 or downflagUpFrontier3 or downflagUpFrontier4
+
+downFractal = downflagDownFrontier and flagDownFrontier
+
+//Plotting
+lastUpFractal   = ta.valuewhen(upFractal,  high[n], 0)
+lastDownFractal = ta.valuewhen(downFractal, low[n], 0)
+pFractalUp   = plot(showFractalSupport ? lastUpFractal   : na, linewidth=1, style=plot.style_circles,                                             offset=-n, color=color.rgb(0,0,0),    title='last Up Fractal')
+pFractalDown = plot(showFractalSupport ? lastDownFractal : na, linewidth=1, style=plot.style_circles,                                             offset=-n, color=color.rgb(0,0,0),    title='last Down Fractal')
+plotshape(useFractals and downFractal,                                      style=shape.triangledown, location=location.belowbar, size=size.tiny, offset=-n, color=color.rgb(0,0,0,80), title="Down Fractal")
+plotshape(useFractals and upFractal,                                        style=shape.triangleup, location=location.abovebar,   size=size.tiny, offset=-n, color=color.rgb(0,0,0,80), title="Up Fractal")
+//----------] End of Williams Fractals
+// Plot Buy and Sell Signals
+// plotshape(useFractals and downFractal, title="Sell Signal", color=color.green, style=shape.labeldown, location=location.belowbar, text="Buy", offset=-n)
+// plotshape(useFractals and upFractal, title="Buy Signal", color=color.red, style=shape.labelup, location=location.abovebar, text="Sell", offset=-n)
+// Alert Fractals
+alertcondition(downFractal, title="Down Fractal Alert", message="Down Fractal Detected. Consider Buying.")
+alertcondition(upFractal, title="Up Fractal Alert", message="Up Fractal Detected. Consider Selling.")
+
+//----------[ Ichimoku Logical Parameters
+isTenkanAboveKijun = tenkanSen > kijunSen
+isCloseAboveTenkan = close > tenkanSen
+isCloseAboveKijun  = close > kijunSen
+kumoTwistUp        = ta.crossover(senkouSpanA, senkouSpanB)
+kumoTwistDown      = ta.crossunder(senkouSpanA, senkouSpanB)
+tenkanCrossUp      = ta.crossover(close, tenkanSen)
+tenkanCrossDown    = ta.crossunder(close, tenkanSen)
+kijunCrossUp       = ta.crossover(close, kijunSen)
+kijunCrossDown     = ta.crossunder(close, kijunSen)
+isChikouAbovePrice = close > close[26]
+kumoTop            = math.max(senkouSpanA, senkouSpanB)
+kumoBottom         = math.min(senkouSpanA, senkouSpanB)
+kumoMiddle         = (kumoTop + kumoBottom) / 2
+kumoGreen          = senkouSpanA > senkouSpanB
+kumoRed            = senkouSpanA < senkouSpanB
+isPriceAboveKumo   = close > kumoTop[25]
+isPriceBelowKumo   = close < kumoBottom[25]
+kumoBreakUp        = ta.crossover(close, kumoTop[25])
+kumoBreakDown      = ta.crossunder(close, kumoBottom[25])
+//----------] End of Ichimoku Logical Parameters
+
+
+//----------[ Start of Kumo Signals
+bullTrend        = isChikouAboveKijun and isPriceAboveKumo and kumoGreen and isTenkanAboveKijun and isChikouAbovePrice
+bearTrend        = (not isChikouAboveKijun) and isPriceBelowKumo and kumoRed and (not isTenkanAboveKijun) and (not isChikouAbovePrice)
+kijunBounceUp    = bullTrend and low<kijunSen*1.0001 and close>kijunSen*1.0001
+kijunBounceDown  = bearTrend and high>kijunSen*0.9999 and close<kijunSen*0.9999
+
+//Plotting
+plotshape(useChikouCross and isChikouAboveKijun and (not isChikouAboveKijun[1]), style=shape.diamond,      location=location.abovebar, size=size.small, color=color.rgb(0,100,0,10),   title="Chikou crossover Kijun")
+plotshape(useChikouCross and isChikouAboveKijun[1] and (not isChikouAboveKijun), style=shape.diamond,      location=location.abovebar, size=size.small, color=color.rgb(75,0,130,10),  title="Chikou crossunder Kijun")
+plotshape(useKumoTwist and kumoTwistUp,                                          style=shape.xcross,       location=location.abovebar, size=size.small, color=color.rgb(0,100,0,10),   title="Kumo twist up")
+plotshape(useKumoTwist and kumoTwistDown,                                        style=shape.xcross,       location=location.abovebar, size=size.small, color=color.rgb(75,0,130,10),  title="Kumo twist down")
+plotshape(useTrendDetector and bullTrend,                                        style=shape.circle,       location=location.abovebar, size=size.tiny,  color=color.rgb(0,100,0,80),   title="Strong Bulltrend")
+plotshape(useTrendDetector and bearTrend,                                        style=shape.circle,       location=location.abovebar, size=size.tiny,  color=color.rgb(75,0,130,80),  title="Strong Beartrend")
+plot(useKijunBounce and kijunBounceUp?kijunSen:na,                               style=plot.style_circles, linewidth=8,                                 color=color.rgb(0,0,0,10),     title="Kijun Bounce Up")
+plot(useKijunBounce and kijunBounceDown?kijunSen:na,                             style=plot.style_circles, linewidth=8,                                 color=color.rgb(0,0,0,10),     title="Kijun Bounce Down")
+plot(useKijunBounce and kijunBounceUp?kijunSen:na,                               style=plot.style_circles, linewidth=6,                                 color=color.orange, title="Kijun Bounce Up")
+plot(useKijunBounce and kijunBounceDown?kijunSen:na,                             style=plot.style_circles, linewidth=6,                                 color=color.rgb(253,249,202,10), title="Kijun Bounce Down")
+plot(useKumoMid?kumoMiddle:na,                                                   offset=displacement - 1,  linewidth=3,                                 color=chikouColor2,            title='kumoMiddle')
+barcolor(useBarColor?(chikouColor):na)
+
+// Signals
+alertcondition(isChikouAboveKijun and (not isChikouAboveKijun[1]),                                                                                                                   title="Chikou Crossover")
+alertcondition(isChikouAboveKijun[1] and (not isChikouAboveKijun),                                                                                                                   title="Chikou Crossunder")
+alertcondition(kumoTwistUp,                                                                                                                                                          title="Kumo Twist Up")
+alertcondition(kumoTwistDown,                                                                                                                                                        title="Kumo Twist Down")
+alertcondition(kijunBounceUp,                                                                                                                                                        title="Kijun Bounce Up")
+alertcondition(kijunBounceDown,                                                                                                                                                      title="Kijun Bounce Down")
+alertcondition(bullTrend and (not bullTrend[1]),                                                                                                                                     title="Bulltrend Start")
+alertcondition(bearTrend and (not bearTrend[1]),                                                                                                                                     title="BearTrend Start")
+//----------[ End of Kumo Signals
